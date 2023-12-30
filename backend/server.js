@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const userRoute =require('./routes/userRoutes')
 const errorHandler = require ("./middleware/errorMiddleware");
+const cookieParser = require('cookie-parser')
 
 const app = express();
 
@@ -12,8 +13,13 @@ const app = express();
 app.use(express.json())
 app.use(express.urlencoded({extended:false}))
 app.use(bodyParser.json());
+app.use(cors())
+app.use(cookieParser())
+
+// Routes Middleware
 app.use("/api/user",userRoute);
 
+app.use(cookieParser)
 // routes
 app.get('/', (req,res) =>
 {
@@ -21,7 +27,6 @@ app.get('/', (req,res) =>
 })
 
 // error middleware
-
 app.use(errorHandler);
 
  

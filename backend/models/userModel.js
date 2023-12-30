@@ -63,6 +63,8 @@ const userSchema = mongoose.Schema({
     const hashedPassword = await bcrypt.hash(this.password,salt);
 
     this.password = hashedPassword;
+
+    next()
   })
 
 
