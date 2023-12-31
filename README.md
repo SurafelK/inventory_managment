@@ -17,7 +17,7 @@ Welcome to the Inventory Management System project! This application is built us
 - **Database**: MongoDB
 - **Authentication**: JSON Web Tokens (JWT)
 - **State Management**: Redux
-- **Styling**: CSS (or your chosen styling solution)
+- **Styling**: Tailwind CSS
 
 ## Getting Started
 
