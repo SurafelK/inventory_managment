@@ -3,7 +3,9 @@ const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs')
 const Token = require('../models/tokenModel')
-const crypto = require("crypto")
+const crypto = require("crypto");
+const { now } = require('mongoose');
+const sendEmail = require('../utils/sendEmail');
 
 // Generate Token
 const generateToken = (id) =>
@@ -310,18 +312,69 @@ const forgotPassword = asyncHandler ( async(req,res) =>
         throw new Error ("User doesn't Exist")
     }
 
+    // Delete token if it exists
+
+    let token = await Token.findOne({userId: user._id})
+
+    if(token)
+    {
+        await Token.deleteOne()
+
+        console.log('token Deleted');
+    }
+
     // Create reset Token
 
     let resetToken = crypto.randomBytes(32).toString("hex") + user._id
 
     // Hash token before saving to db
 
-    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+    const hashedToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
 
-    console.log(hashedToken);
+    // Save the token to DB
 
-    res.send("I got Password")
+    await new Token({
 
+        userId: user._id,
+        token: hashedToken,
+        createdAT: Date.now(),
+        expiresAT : Date.now() + 30 * (60 * 1000)  // 30 mins
+    }).save()
+
+    // Construct reset URL
+    const resetURL = `${process.env.FORNTEND_URL }/resetpassword/ ${resetToken}`
+
+    //  Reset Email
+
+    const message = `
+                    <h2> Hello ${user.name} </h2>
+                    <p> Please use the url below to reset your password </p>
+                    <p> This reset link is valid for only 30 minutes </p>
+                    <a href="${resetURL}" clicktracking=off > ${resetURL} </a>
+                    <p> Regards</p>
+                    <p> IT Department </p>
+                    `;
+  
+    
+    const subject = "Password reset Request";
+    const send_to = user.email;
+    const sent_from = process.env.EMAIL_USER
+
+    try{
+
+        await sendEmail (subject,message,send_to,sent_from)
+
+        res.status(200).json({sucess:true, message:"reset email Sent"})
+
+    }catch(error)
+    {
+        res.status(500)
+
+        throw new Error("Email not sent, Please try again")
+    }
 
 } )
 

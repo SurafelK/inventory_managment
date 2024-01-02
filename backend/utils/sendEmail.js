@@ -8,7 +8,7 @@ const sendEmail = async ( subject,message, send_to, sent_from, reply_to ) =>
         port: 465,
         auth: {
             user: process.env.EMAIL_USER,
-            pass: process.env.babi1429
+            pass: process.env.EMAIL_PASS
         },
 
         tls: {
@@ -22,7 +22,7 @@ const sendEmail = async ( subject,message, send_to, sent_from, reply_to ) =>
         to: send_to,
         replyTO: reply_to,
         subject: subject,
-        message: message
+        html: message
     }
 
     // Send email
