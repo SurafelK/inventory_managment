@@ -2,6 +2,8 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs')
+const Token = require('../models/tokenModel')
+const crypto = require("crypto")
 
 // Generate Token
 const generateToken = (id) =>
@@ -13,7 +15,6 @@ const generateToken = (id) =>
 
  
 // Register User
-
 const registerUser = asyncHandler( async(req,res) =>
 {
     const {name,email,password} =  req.body;
@@ -214,11 +215,124 @@ const loginStatus = asyncHandler(async(req,res)=>
 })
 
 
+// Update User
+const updateuser = asyncHandler( async (req,res)=>
+{
+    const user = await User.findById(req.user._id)
+
+    if(user)
+    {
+        const {name, email, phone, photo ,bio } = user
+
+        user.email = email;
+        user.name = req.body.name || name;
+        user.phone = req.body.phone || phone;
+        user.photo = req.body.photo || photo;
+        user.bio = req.body.bio || bio
+
+
+        const updatedUser = await user.save()
+        
+        res.status(200).json({
+            _id :updatedUser._id,
+            name : updatedUser.name,
+            email : updatedUser.email,
+            photo : updatedUser.photo,
+            phone : updatedUser.phone,
+            bio : updatedUser.bio,
+        })
+    } else{
+
+        res.status(404)
+
+        throw new Error("User not Found")
+    }
+    
+} );
+
+const changePassword = asyncHandler ( async (req,res) =>
+{
+    const user = await User.findById(req.user._id)
+
+    const {oldPassword, password} = req.body
+
+    if(!user)
+    {
+        res.status(400)
+
+        throw new Error("User not found, Pleasse Signup")
+    }
+
+    // Validate
+    if(!oldPassword || !password )
+    {
+        res.status(401)
+
+        throw new Error('Please add new and old Password')
+    }
+
+    // check if Password Password correct
+
+    const passwordIsCorrect = await bcrypt.compare(oldPassword, user.password)
+
+    if( oldPassword === password )
+    {
+        res.status(401)
+        throw new Error ("You have Entered The same old and new Password")
+    }
+
+
+    if(user && passwordIsCorrect)
+    {
+        user.password = password
+
+        await user.save()
+
+        res.status(200).send("Password Change successful")
+    } else {
+
+        res.status(404)
+        throw new Error("Old Password is Incorrect")
+    }
+
+} );
+
+
+const forgotPassword = asyncHandler ( async(req,res) =>
+{
+    const {email} = req.body
+
+    const user = await User.findOne({email});
+
+    if(!user)
+    {
+        res.status(404)
+        throw new Error ("User doesn't Exist")
+    }
+
+    // Create reset Token
+
+    let resetToken = crypto.randomBytes(32).toString("hex") + user._id
+
+    // Hash token before saving to db
+
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+
+    console.log(hashedToken);
+
+    res.send("I got Password")
+
+
+} )
+
 module.exports = {
     registerUser,
     loginUser,
     logoutUser,
     getUser,
-    loginStatus
+    loginStatus,
+    updateuser,
+    changePassword,
+    forgotPassword
 };
 
