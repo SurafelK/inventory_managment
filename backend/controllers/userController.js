@@ -19,7 +19,7 @@ const generateToken = (id) =>
 // Register User
 const registerUser = asyncHandler( async(req,res) =>
 {
-    const {name,email,password} =  req.body;
+    const {name,email,password, role} =  req.body;
     
     //Validation
 
@@ -29,6 +29,8 @@ const registerUser = asyncHandler( async(req,res) =>
 
         throw new Error("Please fill all required fields")
     }
+
+   
 
     if(password.length < 6)
     {
@@ -51,7 +53,8 @@ const registerUser = asyncHandler( async(req,res) =>
     const user = await User.create({
         name,
         email,
-        password
+        password,
+        role
     })
 
      // Generate Token
@@ -68,7 +71,7 @@ const registerUser = asyncHandler( async(req,res) =>
 
     if (user) 
     {
-        const {_id,name, email,photo,phone,bio} = user
+        const {_id,name, email,photo,phone,bio,role} = user
 
         res.status(201).json(
             {
@@ -78,6 +81,7 @@ const registerUser = asyncHandler( async(req,res) =>
                 photo,
                 phone,
                 bio,
+                role,
                 token
             })
     } else{
@@ -128,7 +132,7 @@ const loginUser = asyncHandler( async  (req,res) =>
     
     if(user && passwordIsCorrect)
     {
-        const {_id,name, email,photo,phone,bio} = user
+        const {_id,name, email,photo,phone,bio,role} = user
 
         res.status(200).json(
         {
@@ -138,6 +142,7 @@ const loginUser = asyncHandler( async  (req,res) =>
             photo,
             phone,
             bio,
+            role,
             token
         });
 
@@ -174,7 +179,7 @@ const getUser = asyncHandler( async(req,res)=>
     
     if (user)
     {
-        const { _id, name, email, photo, phone, bio } = user
+        const { _id, name, email, photo, phone, bio, role } = user
 
         res.status(200).json(
             {
@@ -183,7 +188,8 @@ const getUser = asyncHandler( async(req,res)=>
                 email,
                 photo,
                 phone,
-                bio
+                bio,
+                role
             }
         )
     }else{

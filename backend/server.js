@@ -4,8 +4,10 @@ const dotenv = require('dotenv').config();
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const userRoute =require('./routes/userRoutes')
+const productRouter = require('./routes/productRoutes')
 const errorHandler = require ("./middleware/errorMiddleware");
 const cookieParser = require('cookie-parser')
+
 
 const app = express();
 
@@ -18,6 +20,7 @@ app.use(cookieParser())
 
 // Routes Middleware
 app.use("/api/user",userRoute);
+app.use('/api/products', productRouter)
 
 app.use(cookieParser)
 // routes
@@ -28,6 +31,7 @@ app.get('/', (req,res) =>
 
 // error middleware
 app.use(errorHandler);
+
 
  
 // Connect to DB and Start Server
@@ -41,3 +45,4 @@ mongoose.connect(process.env.MONGO_URI)
                 console.log(`Port has Started on ${PORT}`);
             })
         } ).catch((error) => console.log(error))
+
