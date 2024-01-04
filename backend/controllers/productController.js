@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler')
 const Product = require('../models/productModel')
-const { default: mongoose } = require('mongoose')
+
 
 const createProduct = asyncHandler ( async(req,res) =>
 {
@@ -114,7 +114,7 @@ const updateProduct = asyncHandler(async (req, res) => {
           quantity: product.quantity,
           price: product.price,
         }));
-        
+
         res.status(200).json({
           products: productDetails,
         });

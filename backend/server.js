@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const userRoute =require('./routes/userRoutes')
 const productRouter = require('./routes/productRoutes')
+const orderRouter = require('./routes/orderRoutes')
 const errorHandler = require ("./middleware/errorMiddleware");
 const cookieParser = require('cookie-parser')
 
@@ -21,6 +22,7 @@ app.use(cookieParser())
 // Routes Middleware
 app.use("/api/user",userRoute);
 app.use('/api/products', productRouter)
+app.use('/api/order', orderRouter)
 
 app.use(cookieParser)
 // routes
