@@ -5,6 +5,7 @@ const { isSalesManager } = require('../middleware/salesManagerMiddleware')
 const router = express.Router()
 
 router.post('/create', protect,isSalesManager,createOrder)
-router.get('/getorder', getOrder)
+router.get('/getorder', protect,getOrder)
+
 
 module.exports = router
