@@ -78,12 +78,59 @@ const updateProduct = asyncHandler(async (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
-  
-  // Assuming you have a route like this in your Express app
-  // app.put('/products/:productId', updateProduct);
+
+  const getSingleProduct = asyncHandler( async(req,res) =>
+  {
+    const pId = req.params._id;
+
+    try {
+        const product = await Product.findById(pId)
+
+        if(product)
+        {
+            const {name,quantity,price} = product
+            res.status(200).json({
+                message:{
+                    name:name,
+                    quantity:quantity,
+                    price:price
+                }
+            })
+        }
+
+    } catch (error) {
+        
+    }
+  } )
+
+  const getAllProducts = asyncHandler( async(req,res) =>
+  {
+    try {
+        const allProducts = await Product.find();
+        
+        // Assuming you want to return an array of products
+        const productDetails = allProducts.map(product => ({
+          name: product.name,
+          quantity: product.quantity,
+          price: product.price,
+        }));
+        
+        res.status(200).json({
+          products: productDetails,
+        });
+      } catch (error) {
+        console.error('Error fetching all products:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+      
+  }
+    
+   )
   
 
 module.exports = {
     createProduct,
-    updateProduct
+    updateProduct,
+    getSingleProduct,
+    getAllProducts
 }
