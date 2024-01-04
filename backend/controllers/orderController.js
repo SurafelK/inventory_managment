@@ -10,13 +10,13 @@ const createOrder = asyncHandler(async (req, res) => {
   try {
     const { products, quantity, deliveryAddress, customerName, deliveryDate } = req.body;
 
-    console.log(
-      products,
-      quantity,
-      deliveryAddress,
-      customerName,
-      deliveryDate
-    );
+    // console.log(
+    //   products,
+    //   quantity,
+    //   deliveryAddress,
+    //   customerName,
+    //   deliveryDate
+    // );
 
     const convertedDeliveryDate = convertToGMTPlus3(deliveryDate);
 
@@ -73,37 +73,48 @@ function convertToGMTPlus3(dateString) {
 }
 
 // Get Orders
-
-
 const getOrder = asyncHandler(async (req, res) => {
-try {
-    const orders = await Order.find();
+    try {
+        const orders = await Order.find();
+        const orderDetails = orders.map(order => ({
+            quantity: order.quantity,
+            deliveryAddress: order.deliveryAddress,
+            customerName: order.customerName,
+            deliveryDate: order.deliveryDate
+        }));
 
-    const productIds = orders.map(order => order.products).flat(); // Flatten the array of product IDs
+        const productIds = orders.map(order => order.products).flat(); // Flatten the array of product IDs
 
-    console.log(productIds);
+        const products = [];
 
-    const products = [];
+        // Use Promise.all to perform Product.findById calls in parallel
+        const productPromises = productIds.map(async productId => {
+            const product = await Product.findById(productId);
 
-    for (const productId of productIds) {
-        const product = await Product.findById(productId);
-        
-        if (product) {
-            products.push(product);
-        } else {
-            console.log(`Product with ID ${productId} not found.`);
-        }
+            if (product) {
+                const orderDetailIndex = productIds.indexOf(productId);
+                products.push({
+                    name: product.name,
+                    volume: product.quantity,
+                    quantity: orderDetails[orderDetailIndex].quantity,
+                    deliveryDate: orderDetails[orderDetailIndex].deliveryDate,
+                    deliveryAddress: orderDetails[orderDetailIndex].deliveryAddress
+                });
+            } else {
+                console.error(`Product with ID ${productId} not found.`);
+            }
+        });
+
+        await Promise.all(productPromises);
+
+        res.status(200).json({ products });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-
-    console.log(products);
-
-    res.status(200).json(products);
-} catch (error) {
-    // Handle errors appropriately
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-}
 });
+
+
 module.exports = {
   createOrder,
   getOrder
